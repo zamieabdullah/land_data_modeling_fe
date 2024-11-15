@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Table } from 'react-bootstrap';
 
 import { LandDataAPI } from "../../api/landData";
-import { getMonthName } from '../../utils';
+import { getMonthName, reformat } from '../../utils';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -29,9 +29,10 @@ ChartJS.register(
 export const LandDataTable = ({ state }) => {
     const [landData, setLandData] = useState(null);
     const [yearData, setYearData] = useState(null);
-    // const [dataKeys, setDataKeys] = useState(null);
     const year = new Date().getFullYear();
     const month = new Date().toLocaleString('default', { month: 'long' });
+    const [currTrend, setCurrTrend] = useState("Active Listing Count");
+
     
     useEffect(() => {
         if (state) {
@@ -43,7 +44,6 @@ export const LandDataTable = ({ state }) => {
             const loadYearData = async () => {
                 const resp = await LandDataAPI.getRecentMonthlyStateData(state);
                 setYearData(resp);
-                // setDataKeys(Object.keys(resp[0]));
             }
 
             loadStateData();
@@ -51,19 +51,19 @@ export const LandDataTable = ({ state }) => {
         }
     }, [state])
 
-    const getMonthlyData = () => {
+    const getMonthlyData = (trend) => {
         const month = []
         const y_values = []
         yearData?.forEach((m) => {
             month.push(getMonthName(m['month']))
-            y_values.push(m['active_listing_count'])
+            y_values.push(m[reformat(trend)])
         })
 
         const data = {
             labels: month.reverse(),
             datasets: [
                 {
-                    label: "Active Listing Count",
+                    label: trend,
                     data: y_values.reverse(),
                     borderColor: "rgba(75,192,192,1)", // Line color
                     fill: false,                     // Fill below the line
@@ -74,9 +74,18 @@ export const LandDataTable = ({ state }) => {
         return data
     }
 
+    const trends = [
+        'Active Listing Count',
+        'New Listing Count',
+        'Pending Listing Count',
+        'Average Listing Price',
+        'Median Listing Price',
+        'Median Days on Market',
+    ]
+
     const config = {
         type: 'line',
-        data: getMonthlyData(),
+        data: getMonthlyData(currTrend),
         options: {
             responsive: true,
             plugins: {
@@ -154,7 +163,23 @@ export const LandDataTable = ({ state }) => {
                         </tbody>
                     </Table>
                     <h2 className='my-4'>Trends</h2>
-                    <Line options={config?.options} data={config.data}/>
+                    <Line options={config?.options} data={config.data} className='mb-2'/>
+                    <div className='dropdown mb-5'>
+                        <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {currTrend}
+                        </button>
+                        <ul className="dropdown-menu">
+                            {
+                                trends?.map((trend, index) => {
+                                    return (
+                                        <li key={index}>
+                                            <button className="dropdown-item" type="button" onClick={() => {setCurrTrend(trend)}}>{trend}</button>
+                                        </li>
+                                    )
+                                })
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
