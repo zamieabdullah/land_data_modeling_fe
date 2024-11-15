@@ -30,7 +30,11 @@ export const LandDataTable = ({ state }) => {
     const [landData, setLandData] = useState(null);
     const [yearData, setYearData] = useState(null);
     const year = new Date().getFullYear();
-    const month = new Date().toLocaleString('default', { month: 'long' });
+    const now = new Date(); // Current date
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1); // Subtract one month
+
+    // Format to a readable string (e.g., "October")
+    const month = previousMonth.toLocaleString("default", { month: "long" });
     const [currTrend, setCurrTrend] = useState("Active Listing Count");
 
     
