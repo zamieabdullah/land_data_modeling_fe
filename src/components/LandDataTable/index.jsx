@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect } from "react";
 import { Table } from 'react-bootstrap';
+import { track } from '@vercel/analytics/react';
 
 import { LandDataAPI } from "../../api/landData";
 import { getMonthName, reformat } from '../../utils';
@@ -52,6 +53,7 @@ export const LandDataTable = ({ state }) => {
 
             loadStateData();
             loadYearData();
+            track("Viewing State", {state: state})
         }
     }, [state])
 
@@ -75,6 +77,7 @@ export const LandDataTable = ({ state }) => {
             ]
         }
         
+        track("Viewing Trend Chart", {state: state, trend: currTrend});
         return data
     }
 
